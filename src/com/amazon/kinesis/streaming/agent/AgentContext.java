@@ -44,6 +44,8 @@ import com.amazon.kinesis.streaming.agent.tailing.FileFlowFactory;
 import com.amazonaws.ClientConfiguration;
 import com.amazonaws.auth.AWSCredentialsProvider;
 import com.amazonaws.auth.STSAssumeRoleSessionCredentialsProvider;
+import com.amazonaws.regions.Region;
+import com.amazonaws.regions.Regions;
 import com.amazonaws.services.cloudwatch.AmazonCloudWatch;
 import com.amazonaws.services.cloudwatch.AmazonCloudWatchClient;
 import com.amazonaws.services.kinesisfirehose.AmazonKinesisFirehose;
@@ -186,6 +188,8 @@ public class AgentContext extends AgentConfiguration implements IMetricsContext 
 
             if (!Strings.isNullOrEmpty(kinesisEndpoint()))
             	kinesisClient.setEndpoint(kinesisEndpoint());
+            if (!Strings.isNullOrEmpty(kinesisRegion()))
+                kinesisClient.setRegion(Region.getRegion(Regions.fromName(kinesisRegion())));
         }
         return kinesisClient;
     }
