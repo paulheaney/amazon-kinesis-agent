@@ -27,6 +27,9 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import com.amazonaws.client.builder.AwsClientBuilder;
+import com.amazonaws.regions.Region;
+import com.amazonaws.services.kinesisfirehose.AmazonKinesisFirehoseClientBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -162,10 +165,16 @@ public class AgentContext extends AgentConfiguration implements IMetricsContext 
     @VisibleForTesting
     public synchronized AmazonKinesisFirehose getFirehoseClient() {
         if (firehoseClient == null) {
-            firehoseClient = new AmazonKinesisFirehoseClient(
-            		getAwsCredentialsProvider(), getAwsClientConfiguration());
-            if (!Strings.isNullOrEmpty(firehoseEndpoint()))
-                firehoseClient.setEndpoint(firehoseEndpoint());
+//            firehoseClient = new AmazonKinesisFirehoseClient(
+//            		getAwsCredentialsProvider(), getAwsClientConfiguration());
+//            if (!Strings.isNullOrEmpty(firehoseEndpoint()))
+//                firehoseClient.setEndpoint(firehoseEndpoint());
+
+            AwsClientBuilder.EndpointConfiguration endpointConfiguration = new AwsClientBuilder.EndpointConfiguration(firehoseEndpoint(), "eu-west-2");
+
+            firehoseClient = AmazonKinesisFirehoseClientBuilder.standard().withCredentials(getAwsCredentialsProvider())
+                    .withClientConfiguration(getAwsClientConfiguration())
+                    .withEndpointConfiguration(endpointConfiguration).build();
         }
         return firehoseClient;
     }
@@ -174,6 +183,7 @@ public class AgentContext extends AgentConfiguration implements IMetricsContext 
         if (kinesisClient == null) {
             kinesisClient = new AmazonKinesisClient(
                     getAwsCredentialsProvider(), getAwsClientConfiguration());
+
             if (!Strings.isNullOrEmpty(kinesisEndpoint()))
             	kinesisClient.setEndpoint(kinesisEndpoint());
         }
