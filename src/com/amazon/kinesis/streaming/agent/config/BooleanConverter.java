@@ -40,6 +40,7 @@ class BooleanConverter implements Function<Object, Boolean> {
     /**
      * @throws ConfigurationException if the value could not be converted
      *         into a <code>Boolean</code>.
+     *
      */
     @Override
     @Nullable

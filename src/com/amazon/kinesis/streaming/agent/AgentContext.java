@@ -167,16 +167,13 @@ public class AgentContext extends AgentConfiguration implements IMetricsContext 
     @VisibleForTesting
     public synchronized AmazonKinesisFirehose getFirehoseClient() {
         if (firehoseClient == null) {
-//            firehoseClient = new AmazonKinesisFirehoseClient(
-//            		getAwsCredentialsProvider(), getAwsClientConfiguration());
-//            if (!Strings.isNullOrEmpty(firehoseEndpoint()))
-//                firehoseClient.setEndpoint(firehoseEndpoint());
+            firehoseClient = new AmazonKinesisFirehoseClient(
+            		getAwsCredentialsProvider(), getAwsClientConfiguration());
+            if (!Strings.isNullOrEmpty(firehoseEndpoint()))
+                firehoseClient.setEndpoint(firehoseEndpoint());
 
-            AwsClientBuilder.EndpointConfiguration endpointConfiguration = new AwsClientBuilder.EndpointConfiguration(firehoseEndpoint(), "eu-west-2");
-
-            firehoseClient = AmazonKinesisFirehoseClientBuilder.standard().withCredentials(getAwsCredentialsProvider())
-                    .withClientConfiguration(getAwsClientConfiguration())
-                    .withEndpointConfiguration(endpointConfiguration).build();
+            if (!Strings.isNullOrEmpty(kinesisRegion()))
+                firehoseClient.setRegion(Region.getRegion(Regions.fromName(kinesisRegion())));
         }
         return firehoseClient;
     }

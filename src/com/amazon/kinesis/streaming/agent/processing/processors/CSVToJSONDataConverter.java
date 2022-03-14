@@ -83,7 +83,11 @@ public class CSVToJSONDataConverter implements IDataConverter {
         
         for (int i = 0; i < fieldNames.size(); i++) {
             try {
-                recordMap.put(fieldNames.get(i), columns[i]);
+                if (columns[i] != null) {
+                    recordMap.put(fieldNames.get(i), columns[i].trim());
+                } else {
+                    recordMap.put(fieldNames.get(i), columns[i]);
+                }
             } catch (ArrayIndexOutOfBoundsException e) {
             	LoggerFactory.getLogger(getClass()).debug("Null field in CSV detected");
                 recordMap.put(fieldNames.get(i), null);

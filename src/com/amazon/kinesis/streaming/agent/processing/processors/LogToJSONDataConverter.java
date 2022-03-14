@@ -15,6 +15,7 @@ package com.amazon.kinesis.streaming.agent.processing.processors;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -48,12 +49,21 @@ public class LogToJSONDataConverter implements IDataConverter {
     private List<String> fields;
     private ILogParser logParser;
     private IJSONPrinter jsonProducer;
+    private static String STATIC_FIELDS_KEY = "staticFields";
+    private final Map<String, Object> staticFields;
     
     public LogToJSONDataConverter(Configuration config) {
         jsonProducer = ProcessingUtilsFactory.getPrinter(config);
         logParser = ProcessingUtilsFactory.getLogParser(config);
         if (config.containsKey(ProcessingUtilsFactory.CUSTOM_FIELDS_KEY)) {
             fields = config.readList(ProcessingUtilsFactory.CUSTOM_FIELDS_KEY, String.class);
+        }
+
+        if(config.containsKey(STATIC_FIELDS_KEY)){
+            Configuration configuration = config.readConfiguration(STATIC_FIELDS_KEY);
+            staticFields = configuration.getConfigMap();
+        } else {
+            staticFields = new HashMap<String, Object>();
         }
     }
 
@@ -77,7 +87,11 @@ public class LogToJSONDataConverter implements IDataConverter {
                     + "], record will be skipped", e);
             return null;
         }
-        
+
+        for (String key : staticFields.keySet()) {
+            recordMap.put(key, staticFields.get(key));
+        }
+
         String dataJson = jsonProducer.writeAsString(recordMap) + NEW_LINE;
         return ByteBuffer.wrap(dataJson.getBytes(StandardCharsets.UTF_8));
     }
