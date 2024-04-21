@@ -289,8 +289,23 @@ public class DataConverterTest {
         final String expectedStr = "{\"metadata\":{\"foo\":{\"bar\":\"bas\"},\"key\":\"value\"},\"data\":\"This is the data\"}\n";
         verifyDataConversion(converter, dataStr.getBytes(), expectedStr.getBytes()); 
     }
+
+    @Test
+    public void testPa() throws Exception {
+        final Configuration config = new Configuration(new HashMap<String, Object>() {{
+            put("optionName", "LOGTOJSON");
+            put("logFormat", "SYSLOG");
+            put("matchPattern", "\"(\\\\d{4}-\\\\d{2}-\\\\d{2}T\\\\d{2}:\\\\d{2}:\\\\d{2},\\\\d{3})\\\\s*([A-Z]*)\\\\s*\\\\[([A-Za-z0-9\\\\-_]*)\\\\]\\\\s([A-Za-z0-9\\\\.]*)\\\\s-\\\\s(.*)\"");
+            put("customFieldNames", Arrays.asList("column1", "column2", "column3", "column4", "column5", "column6"));
+        }});
+        final IDataConverter converter = new LogToJSONDataConverter(config);
+
+        final String dataStr = "2022-08-15T04:46:20,619 DEBUG [HT_b-bozi-AhJRTZe-qKsg] com.sso.proofid.RootRule - Printing Request: POST /connect/token HTTP/1.1\\\\nX-Forwarded-For: 52.159.96.82\\\\nX-Forwarded-Proto: https\\\\nX-Forwarded-Port: 443\\\\nHost: dev2-ims.bentley.com\\\\nX-Amzn-Trace-Id: Root=1-62f9cf9c-092eb86404cdde397193eab9\\\\nContent-Length: 270\\\\nAccept: application/json\\\\nContent-Type: application/x-www-form-urlencoded\\\\nX-Forwarded-For: 10.153.40.12\\\\n";
+        final String expectedStr = "{\"column1\":\"123.45.67.89\",\"column2\":null,\"column3\":null,\"column4\":\"27/Oct/2000:09:27:09 -0400\",\"column5\":\"GET /java/javaResources.html HTTP/1.0\",\"column6\":\"200\"}\n";
+        verifyDataConversion(converter, dataStr.getBytes(), expectedStr.getBytes());
+    }
     
-    private void verifyDataConversion(IDataConverter converter, byte[] dataBin, byte[] expectedBin) throws Exception {
+    void verifyDataConversion(IDataConverter converter, byte[] dataBin, byte[] expectedBin) throws Exception {
         ByteBuffer data = ByteBuffer.wrap(dataBin);
         ByteBuffer res = converter.convert(data);
         byte[] resBin = new byte[res.remaining()];

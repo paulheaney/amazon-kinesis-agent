@@ -22,6 +22,8 @@ public interface ILogParser {
 
     public void setPattern(String pattern);
     public void setFields(List<String> fields);
+
+    public String getPattern();
     
     /**
      * Parse the record by pairing the values in the record with the given fields

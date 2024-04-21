@@ -21,6 +21,9 @@ import com.amazon.kinesis.streaming.agent.config.ConfigurationException;
 import com.amazon.kinesis.streaming.agent.processing.exceptions.LogParsingException;
 import com.amazon.kinesis.streaming.agent.processing.interfaces.ILogParser;
 import com.amazon.kinesis.streaming.agent.processing.utils.ProcessingUtilsFactory.LogFormat;
+import com.amazon.kinesis.streaming.agent.tailing.checkpoints.Checkpointer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Base class for parsing log entries given fields.
@@ -31,6 +34,8 @@ import com.amazon.kinesis.streaming.agent.processing.utils.ProcessingUtilsFactor
  *
  */
 public abstract class BaseLogParser implements ILogParser {
+
+    static final Logger LOGGER = LoggerFactory.getLogger(Checkpointer.class);
 
     /**
      * The pattern used to filter the log entries
@@ -91,6 +96,7 @@ public abstract class BaseLogParser implements ILogParser {
     
     @Override
     public void setPattern(String pattern) {
+        LOGGER.debug("setPattern {}", pattern);
         if (pattern == null) {
             throw new ConfigurationException("logPattern cannot be null");
         }

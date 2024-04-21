@@ -69,6 +69,7 @@ public class SysLogParser extends BaseLogParser {
         Matcher matcher = logEntryPattern.matcher(record);
         
         if (!matcher.matches()) {
+            LOGGER.debug("No match found in record [" + record + "] using pattern [" + matcher.pattern().pattern() + "]");
             throw new LogParsingException("Invalid log entry given the entry pattern");
         }
         

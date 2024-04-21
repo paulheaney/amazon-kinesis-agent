@@ -21,10 +21,10 @@ fi
 echo "Detected OS Distro: ${dist}"
 
 # Make sure only root can run our script
-if [ "$(id -u)" != "0" ]; then
- echo "This script must be run as root" >&2
- exit 1
-fi
+#if [ "$(id -u)" != "0" ]; then
+# echo "This script must be run as root" >&2
+# exit 1
+#fi
 
 # Based on the OS, determine which commands we'll be calling to install/manage
 # certain things
@@ -54,6 +54,7 @@ dependencies_dir=./dependencies
 log_dir=/var/log/${daemon_name}
 state_dir=/var/run/${daemon_name}
 agent_service=${init_dir}/${daemon_name}
+package_dir=./package
 
 usage() {
   echo "Usage:"
@@ -84,16 +85,17 @@ download_jar() {
 
   # download the file to a temp location, then if move it here if successful
   echo "Downloading $jar_name ($url)..."
-  wget -q -P ${dependencies_dir} $url -O ${tmp_dest} && \
-    mv ${tmp_dest} ${jar_dest}
+#  wget -q -P ${dependencies_dir} $url -O ${tmp_dest} && \
+#    mv ${tmp_dest} ${jar_dest}
+  curl -L -s $url -o ${tmp_dest} && mv  ${tmp_dest} ${jar_dest}
 
   # Purge our temp file regardless of the status here
   rm -f ${tmp_dest}
 }
 
 download_dependencies() {
-  which ant > /dev/null || $install_package ant
-  which wget > /dev/null || $install_package wget
+#  which ant > /dev/null || $install_package ant
+#  which wget > /dev/null || $install_package wget
   
   install -d ${dependencies_dir}
   
@@ -131,11 +133,12 @@ download_dependencies() {
                   com.beust:jcommander:1.48 \
                   org.xerial:sqlite-jdbc:3.20.1 \
                   joda-time:joda-time:2.8.2 \
-		  org.projectlombok:lombok:1.18.4 \
-                  javax.xml.bind:jaxb-api:2.3.0 \
-                  sun.xml.bind:jaxb-impl:2.3.0 \
-                  org.glassfish.jaxb:jaxb-runtime:2.3.0 \
-                  javax.activation:activation:2.3.0"
+		              org.projectlombok:lombok:1.18.4"
+#		  \
+#                  javax.xml.bind:jaxb-api:2.3.0 \
+#                  sun.xml.bind:jaxb-impl:2.3.0 \
+#                  org.glassfish.jaxb:jaxb-runtime:2.3.0 \
+#                  javax.activation:activation:2.3.0"
   for package in ${remote_mvn_pkg}
   do
    download_jar $(echo $package | tr : " ")
@@ -246,6 +249,20 @@ do_install () {
   echo "Your installation has completed!"
 }
 
+do_package() {
+  echo "Packaging Kinesis Agent ..."
+
+  do_build
+
+  install -d ${package_dir}
+
+  cp -a ./bin ${package_dir}
+  cp -a ${dependencies_dir} ${package_dir}
+  cp -a ./support ${package_dir}
+  cp -a ./ant_build/lib/* ${package_dir}/dependencies
+
+}
+
 COMMAND=$1
 case "$COMMAND" in
   --build)
@@ -260,6 +277,10 @@ case "$COMMAND" in
     shift
     do_uninstall "$@"
     echo "Kinesis Agent has been uninstalled"
+    ;;
+  --package)
+    shift
+    do_package "$@"
     ;;
   *)
     usage

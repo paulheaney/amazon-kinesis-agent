@@ -43,11 +43,17 @@ public class SingleLineDataConverter implements IDataConverter {
     
     private final boolean noTrim;
     private final boolean escapeNewLine;
+
+    private final boolean trimTrailing;
+
+    private final String escapeNewLineChar;
     
     public SingleLineDataConverter(Configuration config) {
         List<String> parseOptions = config.readList("parseOptions", String.class, new ArrayList<String>());
         noTrim = parseOptions.contains("NO_TRIM") ? true : false;
         escapeNewLine = parseOptions.contains("ESCAPE_NEW_LINE") ? true : false;
+        trimTrailing = parseOptions.contains("TRIM_TRAILING") ? true : false;
+        escapeNewLineChar = config.readString("escapeNewLineChar");
     }
     
     @Override
@@ -60,9 +66,17 @@ public class SingleLineDataConverter implements IDataConverter {
                 lines[i] = lines[i].trim();
             }
         }
-        
-        String delimiter = escapeNewLine ? "\\\\n" : "";
+
+        if (trimTrailing) {
+            for (int i = 0; i < lines.length; i++) {
+                lines[i] = lines[i].stripTrailing();
+            }
+        }
+
+        // String delimiter = escapeNewLine ? "\\\\n" : "";
+        String delimiter = escapeNewLine ? escapeNewLineChar : "";
         String dataRes = StringUtils.join(lines, delimiter) + NEW_LINE;
+
         return ByteBuffer.wrap(dataRes.getBytes(StandardCharsets.UTF_8));
     }
     
